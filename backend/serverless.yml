@@ -81,7 +81,7 @@ functions:
           auth: Auth
           request:
             schema:
-              application/json: ${file(models/todos.json)}
+              application/json: ${file(models/create-todos.json)}
 
           # reqValidatorName: RequestBodyValidator
           # documentation:
@@ -229,8 +229,6 @@ resources:
         KeySchema:
           - AttributeName: todoId
             KeyType: HASH
-          - AttributeName: createdAt
-            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         GlobalSecondaryIndexes:
