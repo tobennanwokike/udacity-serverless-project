@@ -6,6 +6,8 @@ service:
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
+  # - serverless-reqvalidator-plugin
+  # - serverless-aws-documentation
 
 provider:
   name: aws
@@ -24,6 +26,17 @@ provider:
   tracing:
     lambda: true
     apiGateway: true
+# custom:
+#   documentation:
+#     api:
+#       info:
+#         version: v1.0.0
+#         title: Todo Application
+#         description: Serverless application
+#     models:
+#       - name: CreateToDoRequest
+#         contentType: application/json
+#         schema: ${file(models/create-todo-request.json)}
 
 functions:
 
@@ -66,6 +79,16 @@ functions:
           path: todos
           cors: true
           auth: Auth
+          request:
+            schema:
+              application/json: ${file(models/todos.json)}
+
+          # reqValidatorName: RequestBodyValidator
+          # documentation:
+          #   summary: Create a new Todo item
+          #   description: Create a new Todo item
+          #   requestModels:
+          #     'application/json': CreateToDoRequest
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -94,6 +117,7 @@ functions:
           path: todos/{todoId}
           cors: true
           auth: Auth
+
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -205,6 +229,8 @@ resources:
         KeySchema:
           - AttributeName: todoId
             KeyType: HASH
+          - AttributeName: createdAt
+            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         GlobalSecondaryIndexes:
@@ -249,3 +275,12 @@ resources:
               Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.ATTACHMENTS_S3_BUCKET}/*'
         Bucket: !Ref AttachmentsBucket
+
+    # RequestBodyValidator:
+    #   Type: AWS::ApiGateway::RequestValidator
+    #   Properties:
+    #     Name: 'request-body-validator'
+    #     RestApiId:
+    #       Ref: ApiGatewayRestApi
+    #     ValidateRequestBody: true
+    #     ValidateRequestParameters: false
